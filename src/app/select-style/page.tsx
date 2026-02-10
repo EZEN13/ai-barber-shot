@@ -93,7 +93,7 @@ export default function SelectStylePage() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Header showBack title="Выберите стиль" />
+      <Header showBack showHistory title="Выберите стиль" />
 
       {isGenerating && <LoadingOverlay />}
 

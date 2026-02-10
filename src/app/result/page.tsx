@@ -173,7 +173,7 @@ export default function ResultPage() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Header showReset title="Результат" />
+      <Header showReset showHistory title="Результат" />
 
       <main className="flex-1 p-4 pb-32">
         <div className="max-w-lg mx-auto space-y-6">

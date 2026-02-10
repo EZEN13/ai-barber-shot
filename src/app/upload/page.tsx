@@ -26,7 +26,7 @@ export default function UploadPage() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Header showBack title="Загрузите фото" />
+      <Header showBack showHistory title="Загрузите фото" />
 
       <main className="flex-1 p-4 pb-24">
         <div className="max-w-lg mx-auto">

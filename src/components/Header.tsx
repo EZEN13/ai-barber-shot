@@ -1,16 +1,19 @@
 'use client';
 
-import { Scissors, ArrowLeft, RotateCcw } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Scissors, ArrowLeft, RotateCcw, History } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 
 interface HeaderProps {
   showBack?: boolean;
   showReset?: boolean;
+  showHistory?: boolean;
   title?: string;
 }
 
-export function Header({ showBack = false, showReset = false, title }: HeaderProps) {
-  const { currentStep, setCurrentStep, resetForNew, userRole } = useAppStore();
+export function Header({ showBack = false, showReset = false, showHistory = false, title }: HeaderProps) {
+  const router = useRouter();
+  const { currentStep, setCurrentStep, resetForNew, userRole, history } = useAppStore();
 
   const handleBack = () => {
     switch (currentStep) {
@@ -50,14 +53,28 @@ export function Header({ showBack = false, showReset = false, title }: HeaderPro
           </h1>
         </div>
 
-        <div className="w-10">
+        <div className="flex items-center gap-1">
+          {showHistory && history.length > 0 && (
+            <button
+              onClick={() => router.push('/history')}
+              className="relative p-2 -m-2 text-[var(--muted)] hover:text-white transition-colors"
+              aria-label="История"
+            >
+              <History size={22} />
+              {history.length > 0 && (
+                <span className="absolute top-0 right-0 w-4 h-4 bg-[var(--accent)] text-black text-[9px] font-bold rounded-full flex items-center justify-center">
+                  {history.length > 9 ? '9+' : history.length}
+                </span>
+              )}
+            </button>
+          )}
           {showReset && (
             <button
               onClick={resetForNew}
               className="p-2 -m-2 text-[var(--muted)] hover:text-white transition-colors"
               aria-label="Начать заново"
             >
-              <RotateCcw size={24} />
+              <RotateCcw size={22} />
             </button>
           )}
         </div>
