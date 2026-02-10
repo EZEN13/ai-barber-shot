@@ -1,11 +1,18 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Download, Share2, RefreshCw, Home, Check, Pencil, Send, X } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
-import { Header, BeforeAfterToggle, Button, LoadingOverlay } from '@/components';
-import { downloadImage, shareImage } from '@/lib/utils';
+import { Header, BeforeAfterToggle, Button, LoadingOverlay, HistoryList } from '@/components';
+import {
+  downloadImage,
+  shareImage,
+  downloadImageAsBase64,
+  compressForStorage,
+  createThumbnail,
+  generateId,
+} from '@/lib/utils';
 
 export default function ResultPage() {
   const router = useRouter();
@@ -22,10 +29,71 @@ export default function ResultPage() {
     setResultPhoto,
     selectedHairstyle,
     selectedBeard,
+    modifications,
     resetForNew,
     reset,
     userRole,
+    history,
+    loadHistory,
+    addToHistory,
   } = useAppStore();
+
+  // Load history on mount
+  useEffect(() => {
+    loadHistory();
+  }, [loadHistory]);
+
+  // Save to history after successful generation
+  useEffect(() => {
+    async function saveToHistory() {
+      if (!resultPhoto || !clientPhoto) return;
+
+      try {
+        // Download result URL as base64 if it's a URL
+        const resultBase64 = resultPhoto.startsWith('http')
+          ? await downloadImageAsBase64(resultPhoto)
+          : resultPhoto;
+
+        // Compress images for storage (7MB → 1MB)
+        const clientCompressed = await compressForStorage(clientPhoto);
+        const resultCompressed = await compressForStorage(resultBase64);
+
+        // Generate thumbnails (50KB each)
+        const clientThumb = await createThumbnail(clientCompressed);
+        const resultThumb = await createThumbnail(resultCompressed);
+
+        // Add to history
+        await addToHistory({
+          id: generateId(),
+          timestamp: Date.now(),
+          clientPhoto: clientCompressed,
+          resultPhoto,
+          resultPhotoBase64: resultCompressed,
+          clientThumbnail: clientThumb,
+          resultThumbnail: resultThumb,
+          hairstyle: selectedHairstyle
+            ? {
+                id: selectedHairstyle.id,
+                name: selectedHairstyle.name,
+                nameRu: selectedHairstyle.nameRu,
+              }
+            : null,
+          beard: selectedBeard
+            ? {
+                id: selectedBeard.id,
+                name: selectedBeard.name,
+                nameRu: selectedBeard.nameRu,
+              }
+            : null,
+          modifications,
+        });
+      } catch (error) {
+        console.error('Failed to save to history:', error);
+      }
+    }
+
+    saveToHistory();
+  }, [resultPhoto, clientPhoto, selectedHairstyle, selectedBeard, modifications, addToHistory]);
 
   // Redirect if no result
   if (!clientPhoto || !resultPhoto || !userRole) {
@@ -206,6 +274,24 @@ export default function ResultPage() {
               {shareSuccess ? 'Готово!' : 'Поделиться'}
             </Button>
           </div>
+
+          {/* History section */}
+          {history.length > 0 && (
+            <div className="mt-8 pt-8 border-t border-[var(--card-border)]">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-medium">Предыдущие результаты</h3>
+                {history.length > 3 && (
+                  <button
+                    onClick={() => router.push('/history')}
+                    className="text-sm text-[var(--accent)] hover:underline"
+                  >
+                    Все ({history.length})
+                  </button>
+                )}
+              </div>
+              <HistoryList items={history.slice(0, 3)} />
+            </div>
+          )}
         </div>
       </main>
 
