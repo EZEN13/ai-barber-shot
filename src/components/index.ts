@@ -7,3 +7,6 @@ export { AdjustmentInput } from './AdjustmentInput';
 export { BeforeAfterSlider } from './BeforeAfterSlider';
 export { BeforeAfterToggle } from './BeforeAfterToggle';
 export { LoadingOverlay } from './LoadingOverlay';
+export { HistoryCard } from './HistoryCard';
+export { HistoryList } from './HistoryList';
+export { HistoryModal } from './HistoryModal';

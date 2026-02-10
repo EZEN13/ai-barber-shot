@@ -30,11 +30,13 @@ body {
   min-height: 100dvh;
 }
 
-/* Hide scrollbar for swiper */
-.hide-scrollbar::-webkit-scrollbar {
+/* Hide scrollbar for swiper and history list */
+.hide-scrollbar::-webkit-scrollbar,
+.scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
-.hide-scrollbar {
+.hide-scrollbar,
+.scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
