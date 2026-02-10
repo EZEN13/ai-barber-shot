@@ -1,4 +1,11 @@
 import { create } from 'zustand';
+import type { GenerationHistoryItem } from '@/lib/storage/types';
+import {
+  getHistory,
+  addHistoryItem as addHistoryItemToStorage,
+  deleteHistoryItem as deleteHistoryItemFromStorage,
+  clearHistory as clearHistoryFromStorage,
+} from '@/lib/storage';
 
 export interface Hairstyle {
   id: string;
@@ -238,6 +245,14 @@ interface AppState {
   editPrompt: string;
   setEditPrompt: (prompt: string) => void;
 
+  // История генераций
+  history: GenerationHistoryItem[];
+  isLoadingHistory: boolean;
+  loadHistory: () => Promise<void>;
+  addToHistory: (item: GenerationHistoryItem) => Promise<void>;
+  deleteFromHistory: (id: string) => Promise<void>;
+  clearHistory: () => Promise<void>;
+
   reset: () => void;
   resetForNew: () => void;
 }
@@ -255,6 +270,8 @@ const initialState = {
   error: null as string | null,
   isEditingResult: false,
   editPrompt: '',
+  history: [] as GenerationHistoryItem[],
+  isLoadingHistory: false,
 };
 
 export const useAppStore = create<AppState>((set) => ({
@@ -283,6 +300,47 @@ export const useAppStore = create<AppState>((set) => ({
 
   setIsEditingResult: (editing) => set({ isEditingResult: editing }),
   setEditPrompt: (prompt) => set({ editPrompt: prompt }),
+
+  // История генераций
+  loadHistory: async () => {
+    set({ isLoadingHistory: true });
+    try {
+      const history = await getHistory();
+      set({ history, isLoadingHistory: false });
+    } catch (error) {
+      console.error('Failed to load history:', error);
+      set({ isLoadingHistory: false });
+    }
+  },
+
+  addToHistory: async (item) => {
+    try {
+      await addHistoryItemToStorage(item);
+      const history = await getHistory();
+      set({ history });
+    } catch (error) {
+      console.error('Failed to add history item:', error);
+    }
+  },
+
+  deleteFromHistory: async (id) => {
+    try {
+      await deleteHistoryItemFromStorage(id);
+      const history = await getHistory();
+      set({ history });
+    } catch (error) {
+      console.error('Failed to delete history item:', error);
+    }
+  },
+
+  clearHistory: async () => {
+    try {
+      await clearHistoryFromStorage();
+      set({ history: [] });
+    } catch (error) {
+      console.error('Failed to clear history:', error);
+    }
+  },
 
   reset: () => set(initialState),
 
