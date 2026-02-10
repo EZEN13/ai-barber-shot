@@ -156,6 +156,68 @@ export async function shareImage(base64: string, title: string = 'AI Barber Shot
 }
 
 /**
+ * Downloads a URL and converts it to base64
+ */
+export async function downloadImageAsBase64(url: string): Promise<string> {
+  const response = await fetch(url);
+  const blob = await response.blob();
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        resolve(reader.result);
+      } else {
+        reject(new Error('Failed to convert blob to base64'));
+      }
+    };
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(blob);
+  });
+}
+
+/**
+ * Compresses image for storage (reduces 7MB to ~1MB)
+ * Max width: 2048px, quality: 0.7
+ */
+export async function compressForStorage(base64: string): Promise<string> {
+  return compressImage(base64, 2048, 0.7);
+}
+
+/**
+ * Creates a small thumbnail for list views (~50KB)
+ * Max width: 200px, quality: 0.6
+ */
+export async function createThumbnail(
+  base64: string,
+  maxWidth: number = 200
+): Promise<string> {
+  return compressImage(base64, maxWidth, 0.6);
+}
+
+/**
+ * Preloads an image URL to browser cache
+ */
+export function preloadImage(url: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve();
+    img.onerror = () => reject(new Error('Failed to preload image'));
+    img.src = url;
+  });
+}
+
+/**
+ * Generates a UUID v4
+ */
+export function generateId(): string {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
+/**
  * Classnames utility for conditional classes
  */
 export function cn(...classes: (string | boolean | undefined | null)[]): string {
