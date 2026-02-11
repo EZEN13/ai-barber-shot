@@ -7,6 +7,7 @@ export interface GenerateRequest {
   clientPhoto: string;
   hairstyleName?: string;
   beardName?: string;
+  hairColorName?: string;
   referencePhoto?: string;
   modifications?: string;
   gender?: 'male' | 'female';
@@ -55,8 +56,22 @@ const BEARD_PROMPTS: Record<string, string> = {
   'Balbo': 'Balbo beard, beard on chin and jaw without sideburns, separated mustache, clean cheeks, Tony Stark / Robert Downey Jr style',
 };
 
+// Детальные промпты для цветов волос
+const HAIR_COLOR_PROMPTS: Record<string, string> = {
+  'Natural': 'keep natural hair color unchanged, maintain original tone',
+  'Platinum Blonde': 'platinum blonde hair color, very light silvery-white blonde, cool tone, professional salon color, ultra-light bleached look',
+  'Ash Blonde': 'ash blonde hair color, cool-toned blonde with grey undertones, silvery blonde, natural-looking light hair without warmth',
+  'Golden Blonde': 'golden blonde hair color, warm honey blonde tones, sun-kissed golden highlights, radiant warm blonde',
+  'Caramel': 'caramel hair color, warm caramel brown tones, golden-brown highlights, sweet toffee color, natural-looking warm brunette',
+  'Auburn': 'auburn hair color, rich reddish-brown tones, mahogany with copper highlights, natural-looking red-brown hair',
+  'Dark Brown': 'dark brown hair color, rich deep chocolate brown, professional dark brunette tone',
+  'Black': 'jet black hair color, deep true black, intense dark color, professional black dye',
+  'Highlights': 'blonde highlights, light streaks throughout hair, sun-kissed balayage effect, natural-looking dimension with lighter pieces',
+  'Balayage': 'balayage hair coloring, gradual ombré transition from darker roots to lighter ends, hand-painted natural-looking highlights, dimensional color melt',
+};
+
 /**
- * Создаёт точный промпт для изменения причёски и/или бороды
+ * Создаёт точный промпт для изменения причёски, бороды и/или цвета
  */
 export function constructPrompt(request: GenerateRequest): string {
   // Если это редактирование результата
@@ -84,6 +99,14 @@ Only make the specific requested adjustment. Photorealistic result.`;
     beardDesc = `${request.beardName} beard style`;
   }
 
+  // Собираем описание цвета волос
+  let hairColorDesc = '';
+  if (request.hairColorName && HAIR_COLOR_PROMPTS[request.hairColorName]) {
+    hairColorDesc = HAIR_COLOR_PROMPTS[request.hairColorName];
+  } else if (request.hairColorName) {
+    hairColorDesc = `${request.hairColorName} hair color`;
+  }
+
   // Дополнительные модификации
   let modsText = '';
   if (request.modifications && request.modifications.trim()) {
@@ -91,14 +114,14 @@ Only make the specific requested adjustment. Photorealistic result.`;
   }
 
   // Строим финальный промпт
-  let changeDescription = '';
+  const changes: string[] = [];
+  if (hairstyleDesc) changes.push(`NEW HAIRSTYLE: ${hairstyleDesc}`);
+  if (beardDesc) changes.push(`NEW BEARD: ${beardDesc}`);
+  if (hairColorDesc) changes.push(`HAIR COLOR: ${hairColorDesc}`);
 
-  if (hairstyleDesc && beardDesc) {
-    changeDescription = `NEW HAIRSTYLE: ${hairstyleDesc}. NEW BEARD: ${beardDesc}`;
-  } else if (hairstyleDesc) {
-    changeDescription = `NEW HAIRSTYLE: ${hairstyleDesc}`;
-  } else if (beardDesc) {
-    changeDescription = `NEW BEARD: ${beardDesc}`;
+  let changeDescription = '';
+  if (changes.length > 0) {
+    changeDescription = changes.join('. ');
   } else {
     changeDescription = 'new stylish modern haircut';
   }
@@ -122,8 +145,9 @@ STRICT REQUIREMENTS - DO NOT CHANGE:
 ONLY MODIFY:
 - Hair on the head (style, length, texture as specified)
 ${beardDesc ? '- Facial hair (beard/mustache as specified)' : ''}
+${hairColorDesc ? '- Hair color (dye/color as specified)' : ''}
 
-OUTPUT: Photorealistic high-quality image that looks like a real photograph of the same person with new hairstyle${beardDesc ? ' and beard' : ''}.`;
+OUTPUT: Photorealistic high-quality image that looks like a real photograph of the same person with ${hairstyleDesc ? 'new hairstyle' : ''}${beardDesc && hairstyleDesc ? ', ' : ''}${beardDesc ? 'new beard' : ''}${hairColorDesc && (hairstyleDesc || beardDesc) ? ', and ' : ''}${hairColorDesc ? 'new hair color' : ''}.`;
 
   return prompt;
 }

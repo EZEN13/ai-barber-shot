@@ -22,6 +22,14 @@ export interface BeardStyle {
   description: string;
 }
 
+export interface HairColor {
+  id: string;
+  name: string;
+  nameRu: string;
+  description: string;
+  color: string; // hex color for preview
+}
+
 // Стрижки - включая хайповые
 export const HAIRSTYLES: Hairstyle[] = [
   {
@@ -204,6 +212,80 @@ export const BEARD_STYLES: BeardStyle[] = [
   },
 ];
 
+// Цвета волос
+export const HAIR_COLORS: HairColor[] = [
+  {
+    id: 'natural',
+    name: 'Natural',
+    nameRu: 'Натуральный',
+    description: 'Без изменений',
+    color: '#4A4A4A'
+  },
+  {
+    id: 'platinum-blonde',
+    name: 'Platinum Blonde',
+    nameRu: 'Платиновый блонд',
+    description: 'Очень светлый холодный блонд',
+    color: '#F5F5DC'
+  },
+  {
+    id: 'ash-blonde',
+    name: 'Ash Blonde',
+    nameRu: 'Пепельный блонд',
+    description: 'Серо-белокурый оттенок',
+    color: '#D4D4AA'
+  },
+  {
+    id: 'golden-blonde',
+    name: 'Golden Blonde',
+    nameRu: 'Золотистый блонд',
+    description: 'Тёплый золотой оттенок',
+    color: '#FFD700'
+  },
+  {
+    id: 'caramel',
+    name: 'Caramel',
+    nameRu: 'Карамель',
+    description: 'Тёплый карамельный оттенок',
+    color: '#C68E5F'
+  },
+  {
+    id: 'auburn',
+    name: 'Auburn',
+    nameRu: 'Каштановый',
+    description: 'Красно-коричневый оттенок',
+    color: '#A52A2A'
+  },
+  {
+    id: 'dark-brown',
+    name: 'Dark Brown',
+    nameRu: 'Тёмно-коричневый',
+    description: 'Насыщенный тёмный цвет',
+    color: '#654321'
+  },
+  {
+    id: 'black',
+    name: 'Black',
+    nameRu: 'Чёрный',
+    description: 'Глубокий чёрный цвет',
+    color: '#1A1A1A'
+  },
+  {
+    id: 'highlights',
+    name: 'Highlights',
+    nameRu: 'Мелирование',
+    description: 'Светлые пряди',
+    color: 'linear-gradient(90deg, #8B4513 0%, #F5DEB3 50%, #8B4513 100%)'
+  },
+  {
+    id: 'balayage',
+    name: 'Balayage',
+    nameRu: 'Балаяж',
+    description: 'Плавный переход от тёмного к светлому',
+    color: 'linear-gradient(180deg, #654321 0%, #D4A574 100%)'
+  },
+];
+
 export type UserRole = 'barber' | 'client' | null;
 export type AppStep = 'role' | 'upload' | 'select-style' | 'generating' | 'result';
 
@@ -222,6 +304,9 @@ interface AppState {
 
   selectedBeard: BeardStyle | null;
   setSelectedBeard: (beard: BeardStyle | null) => void;
+
+  selectedHairColor: HairColor | null;
+  setSelectedHairColor: (color: HairColor | null) => void;
 
   referencePhoto: string | null;
   setReferencePhoto: (photo: string | null) => void;
@@ -263,6 +348,7 @@ const initialState = {
   clientPhoto: null as string | null,
   selectedHairstyle: null as Hairstyle | null,
   selectedBeard: null as BeardStyle | null,
+  selectedHairColor: null as HairColor | null,
   referencePhoto: null as string | null,
   modifications: '',
   resultPhoto: null as string | null,
@@ -287,6 +373,8 @@ export const useAppStore = create<AppState>((set) => ({
   }),
 
   setSelectedBeard: (beard) => set({ selectedBeard: beard }),
+
+  setSelectedHairColor: (color) => set({ selectedHairColor: color }),
 
   setReferencePhoto: (photo) => set({
     referencePhoto: photo,
@@ -348,6 +436,7 @@ export const useAppStore = create<AppState>((set) => ({
     clientPhoto: null,
     selectedHairstyle: null,
     selectedBeard: null,
+    selectedHairColor: null,
     referencePhoto: null,
     modifications: '',
     resultPhoto: null,

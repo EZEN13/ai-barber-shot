@@ -88,7 +88,12 @@ export function UploadZone({
   const openCamera = async () => {
     try {
       const mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'user', width: { ideal: 1080 }, height: { ideal: 1920 } },
+        video: {
+          facingMode: 'user',
+          width: { ideal: 1280 },
+          height: { ideal: 1280 },
+          aspectRatio: { ideal: 1 },
+        },
       });
       setStream(mediaStream);
       setIsCameraOpen(true);

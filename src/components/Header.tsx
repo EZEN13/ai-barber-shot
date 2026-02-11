@@ -19,12 +19,15 @@ export function Header({ showBack = false, showReset = false, showHistory = fals
     switch (currentStep) {
       case 'upload':
         setCurrentStep('role');
+        router.push('/');
         break;
       case 'select-style':
         setCurrentStep('upload');
+        router.push('/upload');
         break;
       case 'result':
         setCurrentStep('select-style');
+        router.push('/select-style');
         break;
       default:
         break;

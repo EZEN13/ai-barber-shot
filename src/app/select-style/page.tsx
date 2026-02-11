@@ -8,6 +8,7 @@ import {
   Header,
   HairstyleSelector,
   BeardSelector,
+  HairColorSelector,
   AdjustmentInput,
   Button,
   LoadingOverlay,
@@ -24,6 +25,8 @@ export default function SelectStylePage() {
     setSelectedHairstyle,
     selectedBeard,
     setSelectedBeard,
+    selectedHairColor,
+    setSelectedHairColor,
     referencePhoto,
     setReferencePhoto,
     modifications,
@@ -63,6 +66,7 @@ export default function SelectStylePage() {
           clientPhoto,
           hairstyleName: selectedHairstyle?.name,
           beardName: selectedBeard?.name,
+          hairColorName: selectedHairColor?.name,
           referencePhoto,
           modifications,
           gender: 'male',
@@ -95,7 +99,7 @@ export default function SelectStylePage() {
     <div className="min-h-screen flex flex-col">
       <Header showBack showHistory title="Выберите стиль" />
 
-      {isGenerating && <LoadingOverlay />}
+      {isGenerating && <LoadingOverlay showFunMessages />}
 
       <main className="flex-1 p-4 pb-32">
         <div className="max-w-lg mx-auto space-y-6">
@@ -128,6 +132,12 @@ export default function SelectStylePage() {
           <BeardSelector
             selectedBeard={selectedBeard}
             onSelectBeard={setSelectedBeard}
+          />
+
+          {/* Hair color selector - collapsible */}
+          <HairColorSelector
+            selectedColor={selectedHairColor}
+            onSelectColor={setSelectedHairColor}
           />
 
           {/* Adjustments/modifications */}
