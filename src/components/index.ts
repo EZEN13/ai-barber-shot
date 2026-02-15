@@ -4,6 +4,7 @@ export { UploadZone } from './UploadZone';
 export { HairstyleSelector } from './HairstyleSelector';
 export { BeardSelector } from './BeardSelector';
 export { HairColorSelector } from './HairColorSelector';
+export { ReferenceCopySelector } from './ReferenceCopySelector';
 export { AdjustmentInput } from './AdjustmentInput';
 export { BeforeAfterSlider } from './BeforeAfterSlider';
 export { BeforeAfterToggle } from './BeforeAfterToggle';

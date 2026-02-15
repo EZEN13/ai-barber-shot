@@ -311,6 +311,20 @@ interface AppState {
   referencePhoto: string | null;
   setReferencePhoto: (photo: string | null) => void;
 
+  // Что копировать с референса
+  referenceCopyTargets: {
+    hair: boolean;
+    beard: boolean;
+    hairColor: boolean;
+    fullStyle: boolean;
+  };
+  setReferenceCopyTargets: (targets: {
+    hair?: boolean;
+    beard?: boolean;
+    hairColor?: boolean;
+    fullStyle?: boolean;
+  }) => void;
+
   modifications: string;
   setModifications: (text: string) => void;
 
@@ -350,6 +364,12 @@ const initialState = {
   selectedBeard: null as BeardStyle | null,
   selectedHairColor: null as HairColor | null,
   referencePhoto: null as string | null,
+  referenceCopyTargets: {
+    hair: true,
+    beard: true,
+    hairColor: true,
+    fullStyle: false,
+  },
   modifications: '',
   resultPhoto: null as string | null,
   isGenerating: false,
@@ -380,6 +400,13 @@ export const useAppStore = create<AppState>((set) => ({
     referencePhoto: photo,
     selectedHairstyle: null
   }),
+
+  setReferenceCopyTargets: (targets) => set((state) => ({
+    referenceCopyTargets: {
+      ...state.referenceCopyTargets,
+      ...targets,
+    }
+  })),
 
   setModifications: (text) => set({ modifications: text }),
   setResultPhoto: (photo) => set({ resultPhoto: photo }),

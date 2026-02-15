@@ -9,6 +9,7 @@ import {
   HairstyleSelector,
   BeardSelector,
   HairColorSelector,
+  ReferenceCopySelector,
   AdjustmentInput,
   Button,
   LoadingOverlay,
@@ -29,6 +30,8 @@ export default function SelectStylePage() {
     setSelectedHairColor,
     referencePhoto,
     setReferencePhoto,
+    referenceCopyTargets,
+    setReferenceCopyTargets,
     modifications,
     setModifications,
     setResultPhoto,
@@ -68,6 +71,7 @@ export default function SelectStylePage() {
           beardName: selectedBeard?.name,
           hairColorName: selectedHairColor?.name,
           referencePhoto,
+          referenceCopyTargets: referencePhoto ? referenceCopyTargets : undefined,
           modifications,
           gender: 'male',
         }),
@@ -127,6 +131,16 @@ export default function SelectStylePage() {
             referencePhoto={referencePhoto}
             onReferencePhotoChange={setReferencePhoto}
           />
+
+          {/* Reference copy selector - показываем если есть референс */}
+          {referencePhoto && (
+            <div className="p-4 bg-[var(--card-bg)] rounded-xl border border-[var(--accent)]/30">
+              <ReferenceCopySelector
+                targets={referenceCopyTargets}
+                onTargetsChange={setReferenceCopyTargets}
+              />
+            </div>
+          )}
 
           {/* Beard selector - collapsible */}
           <BeardSelector

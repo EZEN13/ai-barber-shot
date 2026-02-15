@@ -9,6 +9,15 @@ export interface GenerateRequest {
   beardName?: string;
   hairColorName?: string;
   referencePhoto?: string;
+
+  // Что копировать с референса
+  referenceCopyTargets?: {
+    hair?: boolean;
+    beard?: boolean;
+    hairColor?: boolean;
+    fullStyle?: boolean;
+  };
+
   modifications?: string;
   gender?: 'male' | 'female';
   // Для редактирования результата
@@ -77,79 +86,145 @@ export function constructPrompt(request: GenerateRequest): string {
   // Если это редактирование результата
   if (request.isEdit && request.editPrompt) {
     return `Edit this image: ${request.editPrompt}.
-Keep the overall photo composition, background, lighting, and person's identity exactly the same.
-Only make the specific requested adjustment. Photorealistic result.`;
+Keep everything else identical.
+Photorealistic result.`;
   }
 
-  const genderWord = request.gender === 'female' ? 'woman' : 'man';
+  const usingReference = !!request.referencePhoto;
+  const targets = request.referenceCopyTargets;
 
-  // Собираем описание стрижки
-  let hairstyleDesc = '';
-  if (request.hairstyleName && HAIRSTYLE_PROMPTS[request.hairstyleName]) {
-    hairstyleDesc = HAIRSTYLE_PROMPTS[request.hairstyleName];
-  } else if (request.hairstyleName) {
-    hairstyleDesc = `${request.hairstyleName} haircut style`;
-  }
+  const modifications: string[] = [];
 
-  // Собираем описание бороды
-  let beardDesc = '';
-  if (request.beardName && BEARD_PROMPTS[request.beardName]) {
-    beardDesc = BEARD_PROMPTS[request.beardName];
-  } else if (request.beardName) {
-    beardDesc = `${request.beardName} beard style`;
-  }
+  // REFERENCE MODE - копируем стиль с референса
+  if (usingReference && targets) {
+    modifications.push(`
+REFERENCE MODE ENABLED
 
-  // Собираем описание цвета волос
-  let hairColorDesc = '';
-  if (request.hairColorName && HAIR_COLOR_PROMPTS[request.hairColorName]) {
-    hairColorDesc = HAIR_COLOR_PROMPTS[request.hairColorName];
-  } else if (request.hairColorName) {
-    hairColorDesc = `${request.hairColorName} hair color`;
-  }
+Image 1 = SOURCE PERSON (CLIENT PHOTO - IDENTITY LOCKED)
+Image 2 = REFERENCE STYLE PHOTO
 
-  // Дополнительные модификации
-  let modsText = '';
-  if (request.modifications && request.modifications.trim()) {
-    modsText = request.modifications.trim();
-  }
+Extract ONLY selected features from Image 2 and apply them to Image 1.
 
-  // Строим финальный промпт
-  const changes: string[] = [];
-  if (hairstyleDesc) changes.push(`NEW HAIRSTYLE: ${hairstyleDesc}`);
-  if (beardDesc) changes.push(`NEW BEARD: ${beardDesc}`);
-  if (hairColorDesc) changes.push(`HAIR COLOR: ${hairColorDesc}`);
+CRITICAL: NEVER copy face, identity, head shape, or skin tone from reference.
+ONLY copy the specified style elements.
+`);
 
-  let changeDescription = '';
-  if (changes.length > 0) {
-    changeDescription = changes.join('. ');
+    if (targets.fullStyle || targets.hair) {
+      modifications.push(`
+COPY HAIRSTYLE FROM REFERENCE IMAGE
+
+Extract from Image 2:
+- Haircut structure and shape
+- Fade pattern and transitions
+- Hair length distribution
+- Styling direction
+- Hair texture and volume
+
+Apply to Image 1 person while preserving their face and identity.
+
+DO NOT copy reference person's face or head shape.
+`);
+    }
+
+    if (targets.fullStyle || targets.beard) {
+      modifications.push(`
+COPY BEARD FROM REFERENCE IMAGE
+
+Extract from Image 2:
+- Beard length and trim style
+- Beard shape and outline
+- Beard density and coverage
+- Mustache style
+
+Apply to Image 1 person.
+
+DO NOT copy reference person's face.
+`);
+    }
+
+    if (targets.fullStyle || targets.hairColor) {
+      modifications.push(`
+COPY HAIR COLOR FROM REFERENCE IMAGE
+
+Extract hair color from Image 2 and apply to Image 1.
+Match the tone, highlights, and color variations.
+`);
+    }
+
   } else {
-    changeDescription = 'new stylish modern haircut';
+    // CATALOG MODE - используем выбранные стили из каталога
+    if (request.hairstyleName && HAIRSTYLE_PROMPTS[request.hairstyleName]) {
+      modifications.push(`
+NEW HAIRSTYLE:
+${HAIRSTYLE_PROMPTS[request.hairstyleName]}
+`);
+    }
+
+    if (request.beardName && BEARD_PROMPTS[request.beardName]) {
+      modifications.push(`
+NEW BEARD:
+${BEARD_PROMPTS[request.beardName]}
+`);
+    }
+
+    if (request.hairColorName && HAIR_COLOR_PROMPTS[request.hairColorName]) {
+      modifications.push(`
+NEW HAIR COLOR:
+${HAIR_COLOR_PROMPTS[request.hairColorName]}
+`);
+    }
   }
 
-  if (modsText) {
-    changeDescription += `. ADDITIONAL REQUESTS: ${modsText}`;
+  // Дополнительные модификации от пользователя
+  if (request.modifications && request.modifications.trim()) {
+    modifications.push(`
+ADDITIONAL REQUESTS:
+${request.modifications.trim()}
+`);
   }
 
-  const prompt = `Transform this ${genderWord}'s appearance with the following changes:
+  return `
+MULTI IMAGE BARBER EDIT TASK
 
-${changeDescription}
+${usingReference ? `
+Image 1 = CLIENT PHOTO (IDENTITY LOCKED)
+Image 2 = REFERENCE STYLE PHOTO
+` : `
+Image 1 = CLIENT PHOTO
+`}
 
-STRICT REQUIREMENTS - DO NOT CHANGE:
-- Face must remain 100% identical (same facial features, skin tone, expression, face shape)
-- Body position and pose must stay exactly the same
-- Background must remain completely unchanged
-- Clothing must stay exactly the same
-- Lighting and photo quality must be preserved
-- Camera angle and framing must not change
+CRITICAL IDENTITY LOCK:
 
-ONLY MODIFY:
-- Hair on the head (style, length, texture as specified)
-${beardDesc ? '- Facial hair (beard/mustache as specified)' : ''}
-${hairColorDesc ? '- Hair color (dye/color as specified)' : ''}
+The client's face MUST remain absolutely identical.
 
-OUTPUT: Photorealistic high-quality image that looks like a real photograph of the same person with ${hairstyleDesc ? 'new hairstyle' : ''}${beardDesc && hairstyleDesc ? ', ' : ''}${beardDesc ? 'new beard' : ''}${hairColorDesc && (hairstyleDesc || beardDesc) ? ', and ' : ''}${hairColorDesc ? 'new hair color' : ''}.`;
+DO NOT change:
+- Face structure, features, expression
+- Eyes, nose, mouth, jawline
+- Person's identity
+- Head shape
+- Skin tone
+- Body position and pose
+- Background
+- Clothing
+- Lighting and camera angle
 
-  return prompt;
+ONLY APPLY THE FOLLOWING MODIFICATIONS:
+
+${modifications.join('\n')}
+
+REALISM REQUIREMENTS:
+
+- Photorealistic barber result
+- Natural hair physics and flow
+- Professional haircut precision
+- Seamless blend between hair and scalp
+- Realistic hair texture
+
+OUTPUT:
+
+Same person (Image 1) with modified hairstyle/beard/color.
+Face and identity MUST be preserved 100%.
+`;
 }
 
 /**
