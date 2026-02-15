@@ -20,6 +20,11 @@ export interface GenerationHistoryItem {
     name: string;
     nameRu: string;
   } | null;
+  hairColor: {
+    id: string;
+    name: string;
+    nameRu: string;
+  } | null;
   modifications: string;
 }
 
@@ -36,5 +41,6 @@ export interface HistoryMetadata {
   resultPhoto: string;
   hairstyle: GenerationHistoryItem['hairstyle'];
   beard: GenerationHistoryItem['beard'];
+  hairColor: GenerationHistoryItem['hairColor'];
   modifications: string;
 }

@@ -82,6 +82,7 @@ export async function addHistoryItem(item: GenerationHistoryItem): Promise<void>
       resultPhoto: item.resultPhoto,
       hairstyle: item.hairstyle,
       beard: item.beard,
+      hairColor: item.hairColor,
       modifications: item.modifications,
     };
     metadata.unshift(newMetadata); // Add to beginning

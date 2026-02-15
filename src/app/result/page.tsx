@@ -29,6 +29,7 @@ export default function ResultPage() {
     setResultPhoto,
     selectedHairstyle,
     selectedBeard,
+    selectedHairColor,
     modifications,
     resetForNew,
     reset,
@@ -85,6 +86,13 @@ export default function ResultPage() {
                 nameRu: selectedBeard.nameRu,
               }
             : null,
+          hairColor: selectedHairColor
+            ? {
+                id: selectedHairColor.id,
+                name: selectedHairColor.name,
+                nameRu: selectedHairColor.nameRu,
+              }
+            : null,
           modifications,
         });
       } catch (error) {
@@ -93,7 +101,7 @@ export default function ResultPage() {
     }
 
     saveToHistory();
-  }, [resultPhoto, clientPhoto, selectedHairstyle, selectedBeard, modifications, addToHistory]);
+  }, [resultPhoto, clientPhoto, selectedHairstyle, selectedBeard, selectedHairColor, modifications, addToHistory]);
 
   // Redirect if no result
   if (!clientPhoto || !resultPhoto || !userRole) {

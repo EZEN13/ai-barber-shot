@@ -28,6 +28,7 @@ export function HistoryModal({ item, onClose }: HistoryModalProps) {
 
   const styleName = item.hairstyle?.nameRu || 'Свой стиль';
   const beardName = item.beard?.nameRu;
+  const colorName = item.hairColor?.nameRu;
 
   return (
     <div className="fixed inset-0 z-50 bg-black/90 flex flex-col">
@@ -35,8 +36,10 @@ export function HistoryModal({ item, onClose }: HistoryModalProps) {
       <div className="flex items-center justify-between p-4 border-b border-white/10">
         <div>
           <h2 className="font-medium">{styleName}</h2>
-          {beardName && (
-            <p className="text-xs text-[var(--muted)]">+ {beardName}</p>
+          {(beardName || colorName) && (
+            <p className="text-xs text-[var(--muted)]">
+              {[beardName, colorName].filter(Boolean).join(' • ')}
+            </p>
           )}
         </div>
         <button

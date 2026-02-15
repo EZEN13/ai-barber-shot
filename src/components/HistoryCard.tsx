@@ -24,6 +24,7 @@ function getRelativeTime(timestamp: number): string {
 export function HistoryCard({ item, onClick }: HistoryCardProps) {
   const styleName = item.hairstyle?.nameRu || 'Свой стиль';
   const beardName = item.beard?.nameRu;
+  const colorName = item.hairColor?.nameRu;
 
   return (
     <button
@@ -42,8 +43,10 @@ export function HistoryCard({ item, onClick }: HistoryCardProps) {
       {/* Info */}
       <div className="text-left">
         <p className="text-xs font-medium truncate">{styleName}</p>
-        {beardName && (
-          <p className="text-[10px] text-[var(--muted)] truncate">+ {beardName}</p>
+        {(beardName || colorName) && (
+          <p className="text-[10px] text-[var(--muted)] truncate">
+            {[beardName, colorName].filter(Boolean).join(' • ')}
+          </p>
         )}
         <p className="text-[10px] text-[var(--muted)] mt-1">
           {getRelativeTime(item.timestamp)}
